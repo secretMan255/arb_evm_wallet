@@ -110,6 +110,13 @@ export default function Home() {
     }
   }
 
+  const disconnectWallet = () => {
+    setWallet({ account: '' })
+    setTxTo('')
+    setTxAmount('0.001')
+    setStatus('Wallet disconnect')
+  }
+
   const loadWalletState = async (account: string) => {
     if (!window.ethereum) return
 
@@ -182,7 +189,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-50 flex items-center justify-center">
-      <div className='w-full max-w-xl bg-slate-900/70 border border-slate-700 rounded-2xl p-6 space-y-4'>
+      <div className='w-full max-w-2xl bg-slate-900/70 border border-slate-700 rounded-2xl p-6 space-y-4'>
 
         <div className='flex flex-row gap-5'>
           <h1 className='text-lg'>EVM Wallet (Arbitrum Sepolia Testnet)</h1>
@@ -190,9 +197,16 @@ export default function Home() {
           <button
             onClick={connectWallet}
             disabled={loading}
-            className="px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50"
+            className="text-md px-2 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50"
           >
             {wallet.account ? 'Reconnect wallet' : 'Connect MetaMask'}
+          </button>
+          <button
+            onClick={disconnectWallet}
+            disabled={loading || !wallet.account}
+            className='text-md px-2 py-1 rounded-lg bg-red-500 hover:bg-red-400 disabled:opacity-50'
+          >
+            Disconnect
           </button>
         </div>
 
