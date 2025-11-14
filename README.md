@@ -1,36 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚀 EVM Wallet — Arbitrum Sepolia Testnet
+A simple EVM wallet demo built for the BLOX Engineering Assessment.  
+The app allows a user to:
 
-## Getting Started
+- Connect their MetaMask wallet  
+- Ensure they are on **Arbitrum Sepolia**  
+- View wallet info (address + chain id/name)  
+- Read balances:
+  - Native ETH  
+  - MYRC ERC-20 token  
+- *(Stretch goal)* Send a basic ETH transaction via MetaMask  
+- Read on-chain data through **Alchemy RPC**  
 
-First, run the development server:
+Live Demo: https://arb-evm-wallet.vercel.app
+
+---
+
+# 📦 Tech Stack
+
+- **Next.js 14 (React App Router)**
+- **ethers.js v6**
+- **MetaMask (window.ethereum)**
+- **Alchemy RPC (Arbitrum Sepolia)**
+- **TailwindCSS (for basic styling)**
+
+Everything runs client-side because MetaMask only exists in the browser.
+
+---
+
+# ⚙️ Setup
+
+```bash
+git clone https://github.com/secretMan255/arb_evm_wallet
+cd arb_evm_wallet
+npm install
+```
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_CHAIN_ID=421614
+NEXT_PUBLIC_CHAIN_ID_HEX=0x66eee
+
+NEXT_PUBLIC_MYRC_TOKEN_ADDRESS=0x5bd9fad99155001645b62a35f1edc5dd01609103
+NEXT_PUBLIC_MYRC_DECIMALS=6
+
+# Your Alchemy endpoint
+NEXT_PUBLIC_ALCHEMY_RPC_URL="https://arb-sepolia.g.alchemy.com/v2/your-key"
+```
+
+Run locally:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# 🧠 How It Works (Friendly Explanation)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 1. Connecting MetaMask
+The dApp requests accounts using:
 
-## Learn More
+```ts
+window.ethereum.request({ method: 'eth_requestAccounts' })
+```
 
-To learn more about Next.js, take a look at the following resources:
+Before connecting, it ensures the network is **Arbitrum Sepolia**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If not, it auto-switches using:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```ts
+wallet_switchEthereumChain
+```
 
-## Deploy on Vercel
+If MetaMask does not have the chain, it auto-adds it using:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```ts
+wallet_addEthereumChain
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 2. Reading Chain & Wallet Info
+
+- `ethers.BrowserProvider` reads chainId  
+- address stored in React state  
+- UI shows address + chain name  
+
+---
+
+## 3. Reading ETH Balance
+
+Uses Alchemy RPC:
+
+```ts
+const provider = new ethers.JsonRpcProvider(ALCHEMY_RPC_URL)
+const balance = await provider.getBalance(account)
+```
+
+---
+
+## 4. Reading MYRC Token Balance
+
+Uses ERC-20 ABI:
+
+```ts
+const myrc = new ethers.Contract(MYRC_TOKEN_ADDRESS, ERC20_ABI, provider)
+const raw = await myrc.balanceOf(account)
+```
+
+Converted using decimals (MYRC = 6):
+
+```ts
+ethers.formatUnits(raw, 6)
+```
+
+---
+
+## 5. Sending ETH Transaction (Stretch Goal)
+
+```ts
+window.ethereum.request({
+  method: 'eth_sendTransaction',
+  params: [{ from, to, value }]
+})
+```
+
+MetaMask:
+
+- signs  
+- broadcasts  
+- updates balance  
+
+---
+
+# 📁 Project Structure
+
+```
+app/
+ └─ page.tsx
+lib/
+ ├─ config.ts
+ └─ erc20.ts
+```
+
+---
+
+# 🧩 Key Decisions & Trade-offs
+
+### 1. ethers.js over web3.js
+Cleaner, modern, smaller.
+
+### 2. Client-only Web3
+MetaMask works only in browser.
+
+### 3. Alchemy RPC
+More reliable than public RPC.
+
+### 4. Minimal ERC-20 ABI
+Only necessary functions.
+
+### 5. No backend
+Simplifies architecture.
+
+---
+
+# 🧠 Assumptions
+
+- Only MetaMask is required  
+- Only MYRC token on Sepolia  
+- No need for transaction history  
+- No backend storage  
+- Alchemy RPC available  
+
+---
+
+# 🚀 If I Had One More Week…
+
+- Add more chain connection, eg: cardano, solana
+- Transaction history  
